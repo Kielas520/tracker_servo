@@ -1,0 +1,31 @@
+[project]
+name = "tracker-servo"
+version = "0.1.0"
+description = "Upper computer tracking system with YOLO World / MixFormerV2"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "opencv-python",
+    "numpy",
+    "pyserial",
+    "ultralytics",
+    "onnxruntime<1.20",
+    "clip @ git+https://github.com/openai/CLIP.git",
+    "rich",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/cam",
+    "src/detector",
+    "src/tracker",
+    "src/kie_serial",
+    "src/ui",
+]

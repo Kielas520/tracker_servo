@@ -1,0 +1,25 @@
+camera:
+  source: 0
+  width: 640
+  height: 480
+
+detector:
+  mode: mix
+  yolo_model_path: models/yolov8s-worldv2.pt
+  mix_model_path: models/mixformerv2.onnx
+  classes:
+    - person
+  conf: 0.5
+  draw: true
+
+tracker:
+  fov_x: 60.0
+  fov_y: 45.0
+  max_lost: 10
+  hz: 30
+
+serial:
+  enabled: false
+  port: /dev/tty.usbmodem5B140645891
+  baud_rate: 115200
+  header: "A55A"
