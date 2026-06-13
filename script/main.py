@@ -103,22 +103,31 @@ def select_target_yolo(detector, frame):
     return False
 
 
-def tracking_loop(cam, detector, tracker_obj, ser, state):
+def detection_loop(cam, detector, state):
+    det_fps = FpsCounter()
+    while state["running"]:
+        frame = cam.read()
+        center = detector.detect(frame)
+        det_fps.tick()
+        state["det_fps"] = det_fps.fps
+        state["raw_center"] = center
+        state["new_detection"] = True
+
+
+def control_loop(tracker_obj, ser, detector, state):
     hz = CFG["tracker"]["hz"]
     interval = 1.0 / hz
-    det_fps = FpsCounter()
     trk_fps = FpsCounter()
     ser_fps = FpsCounter()
 
     while state["running"]:
         t0 = time.time()
 
-        frame = cam.read()
-
-        center = detector.detect(frame)
-        det_fps.tick()
-        state["det_fps"] = det_fps.fps
-        state["raw_center"] = center
+        if state["new_detection"]:
+            center = state["raw_center"]
+            state["new_detection"] = False
+        else:
+            center = None
 
         result = tracker_obj.update(center)
         trk_fps.tick()
@@ -198,17 +207,24 @@ def main():
         "pitch": 0.0,
         "raw_center": None,
         "filtered_state": None,
+        "new_detection": False,
         "det_fps": 0.0,
         "trk_fps": 0.0,
         "ser_fps": 0.0,
     }
 
-    track_thread = threading.Thread(
-        target=tracking_loop,
-        args=(cam, detector, tracker_obj, ser, state),
+    det_thread = threading.Thread(
+        target=detection_loop,
+        args=(cam, detector, state),
         daemon=True,
     )
-    track_thread.start()
+    ctrl_thread = threading.Thread(
+        target=control_loop,
+        args=(tracker_obj, ser, detector, state),
+        daemon=True,
+    )
+    det_thread.start()
+    ctrl_thread.start()
 
     with Live(build_status_table(state), refresh_per_second=10, console=console) as live:
         while state["running"]:
@@ -223,7 +239,8 @@ def main():
 
             live.update(build_status_table(state))
 
-    track_thread.join(timeout=1.0)
+    det_thread.join(timeout=1.0)
+    ctrl_thread.join(timeout=1.0)
     cam.release()
     if ser:
         ser.close()
