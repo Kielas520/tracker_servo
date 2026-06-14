@@ -3,13 +3,13 @@ import numpy as np
 
 
 class YoloBackend:
-    def __init__(self, model_path: str = "yolov8s-worldv2.pt", conf: float = 0.5):
+    def __init__(self, model_path: str = "yolov8n.pt", conf: float = 0.5):
         self._model = YOLO(model_path)
         self._conf = conf
         self._target_class: str | None = None
 
     def set_classes(self, classes: list[str]):
-        self._model.set_classes(classes)
+        pass
 
     def detect_all(self, frame: np.ndarray) -> list[dict]:
         results = self._model(frame, conf=self._conf, verbose=False)

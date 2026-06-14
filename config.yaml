@@ -19,7 +19,7 @@ tracker:
   hz: 30
 
 serial:
-  enabled: false
-  port: /dev/tty.usbmodem5B140645891
+  enabled: true
+  port: /dev/tty.usbmodem5B7B0546401
   baud_rate: 115200
-  header: "A55A"
+  header: "A5"
